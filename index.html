@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>타로 카드 선택</title>
+    <link rel="icon" href="./icon/icon.jpg" type="image/jpeg">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .card {
+            width: 60px;
+            height: 100px;
+            border: 2px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+        }
+        .selected-cards {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>    
+<body>
+    <h1>타로 카드 선택</h1>
+    <div style="margin-bottom: 15px;">
+        <button onclick="shuffleDeck()">카드 섞기</button>
+        <button onclick="pickRandomCards()">랜덤 카드 선택</button>
+        <button onclick="resetSelection()">선택 초기화</button>
+    </div>
+    <div style="margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; align-items: center;">
+        <label for="maxSelect">최대 선택 개수:</label>
+        <input type="number" id="maxSelect" min="1" max="10" value="3">
+        <button onclick="applyMaxSelection()">적용</button>
+    </div>
+    <div style="margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; align-items: center;">
+        <label for="cardIndex">카드 번호 선택:</label>
+        <input type="number" id="cardIndex" min="1" max="78">
+        <button onclick="pickCardByIndex()">번호로 카드 선택</button>
+    </div>
+    
+    <h2>선택된 카드</h2>
+    <div class="selected-cards" id="selected-container"></div>
+    
+    <h2>랜덤으로 섞인 카드 리스트</h2>
+    <div class="card-container" id="deck-container"></div>
+    
+    <script>
+        const tarotCards = [
+            "바보", "마법사", "여사제", "여황제", "황제",
+            "교황", "연인", "전차", "힘", "은둔자",
+            "운명의 수레바퀴", "정의", "매달린 사람", "죽음", "절제",
+            "악마", "탑", "별", "달", "태양", "심판", "세계",
+            "컵 에이스", "컵 2", "컵 3", "컵 4", "컵 5",
+            "컵 6", "컵 7", "컵 8", "컵 9", "컵 10",
+            "컵 시종", "컵 기사", "컵 여왕", "컵 왕",
+            "펜타클 에이스", "펜타클 2", "펜타클 3", "펜타클 4",
+            "펜타클 5", "펜타클 6", "펜타클 7", "펜타클 8",
+            "펜타클 9", "펜타클 10", "펜타클 시종", "펜타클 기사",
+            "펜타클 여왕", "펜타클 왕",
+            "소드 에이스", "소드 2", "소드 3", "소드 4",
+            "소드 5", "소드 6", "소드 7", "소드 8",
+            "소드 9", "소드 10", "소드 시종", "소드 기사",
+            "소드 여왕", "소드 왕",
+            "완드 에이스", "완드 2", "완드 3", "완드 4",
+            "완드 5", "완드 6", "완드 7", "완드 8",
+            "완드 9", "완드 10", "완드 시종", "완드 기사",
+            "완드 여왕", "완드 왕"
+        ];
+        
+        let deck = [];
+        let selectedCards = [];
+        let maxSelection = 3;
+
+        function shuffleDeck() {
+            deck = [...tarotCards].sort(() => Math.random() - 0.5);
+            resetSelection();
+            displayDeck();
+        }
+
+        function applyMaxSelection() {
+            maxSelection = parseInt(document.getElementById("maxSelect").value) || 3;
+            updateSelectedCardsLayout();
+        }
+
+        function updateSelectedCardsLayout() {
+            const container = document.getElementById("selected-container");
+            container.innerHTML = "";
+
+            for (let i = 0; i < maxSelection; i++) {
+                const cardDiv = document.createElement("div");
+                cardDiv.className = "card";
+
+                if (selectedCards[i]) {
+                    const cardName = selectedCards[i];
+                    cardDiv.style.backgroundImage = `url('tarot_images/${cardName}.jpg')`;
+                    cardDiv.style.backgroundSize = "cover";
+                    cardDiv.style.backgroundPosition = "center";
+                } else {
+                    cardDiv.textContent = "";
+                    cardDiv.style.backgroundImage = "none";
+                }
+
+                container.appendChild(cardDiv);
+            }
+        }
+
+        function pickCardByIndex() {
+            const index = parseInt(document.getElementById("cardIndex").value) - 1;
+
+            if (index >= 0 && index < deck.length && selectedCards.length < maxSelection) {
+                selectedCards.push(deck[index]);
+                updateSelectedCardsLayout();
+            }
+        }
+
+        function pickRandomCards() {
+         selectedCards = [];
+
+        // deck에서 maxSelection 개수만큼 랜덤으로 뽑기
+        let tempDeck = [...deck]; // 원본 deck을 변경하지 않도록 복사
+            for (let i = 0; i < maxSelection && tempDeck.length > 0; i++) {
+                const randomIndex = Math.floor(Math.random() * tempDeck.length);
+                selectedCards.push(tempDeck[randomIndex]);
+                tempDeck.splice(randomIndex, 1); // 중복 방지를 위해 선택한 카드 제거
+            }
+
+            updateSelectedCardsLayout();
+        }
+
+        function resetSelection() {
+            selectedCards = [];
+            updateSelectedCardsLayout();
+        }
+
+        function displayDeck() {
+            const container = document.getElementById("deck-container");
+            container.innerHTML = "";
+
+            deck.forEach((card, index) => {
+                const cardDiv = document.createElement("div");
+                cardDiv.className = "card";
+                
+                // 카드 뒷면 이미지 적용
+                cardDiv.style.backgroundImage = `url('tarot_images/${card}.jpg')`;
+                cardDiv.style.backgroundSize = "cover";
+                cardDiv.style.backgroundPosition = "center";
+
+                cardDiv.onclick = () => pickCardByIndex(index);
+                container.appendChild(cardDiv);
+            });
+        }
+
+        shuffleDeck();
+    </script>
+</body>
+</html>
